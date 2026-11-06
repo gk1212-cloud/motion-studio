@@ -5,32 +5,54 @@
 <title>Engineering High-Friction Environments</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0a0a; color: #f5f5f5; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
-  .clip { position: absolute; }
+  body { background: #0a0a0a; color: #f5f5f5; font-family: 'Helvetica Neue', 'Segoe UI', Arial, sans-serif; overflow: hidden; }
+  .clip { position: absolute; inset: 0; }
 </style>
 </head>
 <body>
 <div data-composition-id="ch-03" data-width="1920" data-height="1080" data-start="0" data-duration="24" data-fps="30" style="position:relative;width:1920px;height:1080px;overflow:hidden;">
-<div class="clip" data-start="0" data-duration="5" data-track-index="0" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;">
-  <div style="font-size:28px;letter-spacing:4px;opacity:0.6;">PART THREE</div>
-  <div style="font-size:120px;font-weight:700;margin-top:20px;">Building Cognitive Barriers</div>
+<div class="clip" data-start="0" data-duration="5" data-track-index="0"
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 200px;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 100%);">
+  <div style="font-size:24px;letter-spacing:6px;color:#6c63ff;opacity:0;transform:translateY(20px);" class="anim" data-delay="0">PART THREE</div>
+  <div style="font-size:140px;font-weight:800;margin-top:16px;line-height:1;opacity:0;transform:translateY(30px);" class="anim" data-delay="0.2">Building Cognitive Barriers</div>
+  <div style="width:80px;height:4px;background:#6c63ff;margin-top:30px;opacity:0;transform:scaleX(0);transform-origin:left;" class="anim-bar" data-delay="0.5"></div>
 </div>
-<div class="clip" data-start="5" data-duration="8" data-track-index="0" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 200px;font-size:48px;">
-  <div style="font-size:28px;letter-spacing:3px;opacity:0.6;margin-bottom:20px;"></div>
-  <ul style="list-style:none;padding:0;"></ul>
+<div class="clip" data-start="5" data-duration="8" data-track-index="0"
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 240px;background:#0a0a0a;">
+  <div style="font-size:28px;letter-spacing:4px;color:#6c63ff;margin-bottom:30px;opacity:0;" class="anim" data-delay="0"></div>
+  <ul style="list-style:none;padding:0;font-size:48px;font-weight:500;"></ul>
 </div>
-<div class="clip" data-start="13" data-duration="6" data-track-index="0" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:72px;font-weight:600;text-align:center;">
-  <div>Design for focus,</div><div>Not for speed.</div>
+<div class="clip" data-start="13" data-duration="6" data-track-index="0"
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 240px;background:#0a0a0a;">
+  <div style="font-size:84px;font-weight:700;line-height:1.15;"><div style="opacity:0;transform:translateY(24px);" class="anim" data-delay="0.1">Design for focus,</div><div style="opacity:0;transform:translateY(24px);" class="anim" data-delay="0.25">Not for speed.</div></div>
 </div>
-<div class="clip" data-start="19" data-duration="5" data-track-index="0" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
-  <div style="font-size:80px;font-weight:700;">Reduce the switches.</div>
-  <div style="font-size:32px;margin-top:20px;opacity:0.6;"></div>
+<div class="clip" data-start="19" data-duration="5" data-track-index="0"
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 100%);">
+  <div style="font-size:72px;font-weight:700;opacity:0;transform:translateY(20px);" class="anim" data-delay="0">Reduce the switches.</div>
+  <div style="font-size:32px;margin-top:20px;opacity:0;color:#6c63ff;" class="anim" data-delay="0.3"></div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
 <script>
   window.__timelines = window.__timelines || {};
-  window.__timelines["ch-03"] = gsap.timeline({ paused: true });
+  const tl = gsap.timeline({ paused: true });
+  document.querySelectorAll('.anim').forEach((el) => {
+    const d = parseFloat(el.dataset.delay || 0);
+    gsap.set(el, { opacity: 0, y: 24 });
+    tl.to(el, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, d);
+  });
+  document.querySelectorAll('.anim-bar').forEach((el) => {
+    const d = parseFloat(el.dataset.delay || 0);
+    gsap.set(el, { scaleX: 0 });
+    tl.to(el, { scaleX: 1, duration: 0.8, ease: "power2.out" }, d);
+  });
+  document.querySelectorAll('.anim-bar2').forEach((el) => {
+    const d = parseFloat(el.dataset.delay || 0);
+    const pct = el.dataset.pct || 0;
+    gsap.set(el, { width: "0%" });
+    tl.to(el, { width: pct + "%", duration: 1, ease: "power2.out" }, d);
+  });
+  window.__timelines["ch-03"] = tl;
 </script>
 </body>
 </html>
