@@ -28,14 +28,32 @@ log(`  claim: ${angle.claim}\n`);
 
 // 2. Storyboard
 const storyRes = await askJson({
-  system: `You are a motion-graphics director. Write a storyboard as JSON. 3 chapters, each ~90 seconds, 4-6 scenes per chapter. Scene types: chapter, statement, stat, list, quote, outro. Every scene needs "type", "duration" (3-12s), and "say" (spoken narration, 6-20 words). First scene of each chapter is type "chapter". One outro in last chapter. Output STRICT JSON only: { "meta": { "slug": "...", "title": "under 60 chars", "description": "...", "tags": ["..."], "categoryId": "27", "privacyStatus": "private" }, "chapters": [ { "id": "ch-01", "title": "...", "scenes": [ { "type": "chapter", "number": 1, "kicker": "PART ONE", "title": "...", "duration": 4, "say": "..." }, { "type": "statement", "text": "line1\\nline2", "duration": 5, "say": "..." } ] } ], "shorts": [] }`,
+  system: `Output STRICT JSON only. No prose, no fences.
+
+Shape (copy this exactly):
+{ "meta": { "slug": "kebab-case", "title": "under 60 chars", "description": "2 sentences", "tags": ["tag1"], "categoryId": "27", "privacyStatus": "private" }, "chapters": [ { "id": "ch-01", "title": "short title", "scenes": [ { "type": "chapter", "number": 1, "kicker": "PART ONE", "title": "Title", "duration": 4, "say": "narration sentence here" } ] } ], "shorts": [] }
+
+Rules:
+- 3 chapters, each ~90 seconds, 4-6 scenes per chapter
+- Scene types: chapter, statement, stat, list, quote, outro, character
+- Every scene: type, duration (3-12), say (6-20 words narration)
+- First scene of each chapter is type "chapter"
+- One outro in last chapter only
+- character type: text + mood ("talk","point","wave")
+- No invented stats. Use statement instead of stat when unsure.
+- No generic advice. Be specific and concrete.`,
   user: `Topic: ${topic}\nAngle: ${angle.angle}\nClaim: ${angle.claim}\nTarget: 4.5 minutes, 3 chapters.`,
   temperature: 0.9,
   maxTokens: 6000,
   purpose: "storyboard",
 });
-
 let storyboard = storyRes.json;
+// Some models return a flat array of scenes or wrap in "storyboard" — normalize
+if (Array.isArray(storyboard)) {
+  storyboard = { meta: { slug: "film", title: topic, description: "", tags: [], categoryId: "27", privacyStatus: "private" }, chapters: [{ id: "ch-01", title: "Chapter 1", scenes: storyboard }], shorts: [] };
+}
+if (storyboard?.storyboard) storyboard = storyboard.storyboard;
+if (storyboard?.film) storyboard = storyboard.film;
 if (!storyboard?.chapters?.length) { fail("No storyboard produced."); }
 
 // 3. Gate + revise

@@ -1,6 +1,6 @@
 import { askJson } from "./lib/llm.mjs";
 
-export const SCENE_TYPES = ["chapter", "statement", "stat", "list", "quote", "outro"];
+export const SCENE_TYPES = ["chapter", "statement", "stat", "list", "quote", "outro", "character"];
 
 const BANNED = ["in this video", "let's dive", "game changer", "delve into", "mind-blowing"];
 
@@ -18,6 +18,7 @@ export function localGate(sb) {
         const w = String(s.say).trim().split(/\s+/).length;
         if (w > 60) issues.push(`${c.id}/${s.type}: narration too long (${w} words)`);
       }
+      if (s.type === "character" && !s.text) s.text = s.say ?? "";
     }
   }
   const flat = JSON.stringify(sb).toLowerCase();
