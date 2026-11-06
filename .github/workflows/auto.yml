@@ -84,8 +84,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Render
         run: node tools/render.mjs --quality ${{ env.HF_QUALITY }}
-      - name: Upload
-        if: ${{ github.event.inputs.upload == 'true' }}
+      - name: Upload render
         uses: actions/upload-artifact@v4
         with:
           name: rendered
