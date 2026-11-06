@@ -7,60 +7,104 @@ const sb = await readJson(STORYBOARD);
 if (!sb?.chapters?.length) fail("No chapters.");
 
 const W = 1920, H = 1080;
+const ACCENT = "#ff3366";
+const ACCENT2 = "#ffcc00";
 
 function esc(s) { return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
+function splitWords(text) {
+  return String(text ?? "").split(/\s+/).filter(Boolean);
+}
+
+function kineticText(text, baseDelay, size, weight, color, align) {
+  const words = splitWords(text);
+  return words.map((w, i) => {
+    const d = baseDelay + i * 0.08;
+    return `<span style="display:inline-block;opacity:0;transform:translateY(40px) rotateX(15deg);filter:blur(4px);" class="kw" data-delay="${d}">${esc(w)}</span>`;
+  }).join(" ");
+}
+
 function sceneHtml(scene, start, dur, idx) {
   const t = scene.type;
-  const delay = 0.3;
+
   if (t === "chapter") {
+    const titleWords = splitWords(scene.title ?? "Chapter");
+    const titleSpans = titleWords.map((w, i) =>
+      `<span style="display:inline-block;opacity:0;transform:translateY(60px);" class="kw" data-delay="${0.4 + i * 0.12}">${esc(w)}</span>`).join(" ");
     return `<div class="clip" data-start="${start}" data-duration="${dur}" data-track-index="0"
-  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 200px;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 100%);">
-  <div style="font-size:24px;letter-spacing:6px;color:#6c63ff;opacity:0;transform:translateY(20px);" class="anim" data-delay="0">${esc(scene.kicker ?? "PART")}</div>
-  <div style="font-size:140px;font-weight:800;margin-top:16px;line-height:1;opacity:0;transform:translateY(30px);" class="anim" data-delay="0.2">${esc(scene.title ?? "Chapter")}</div>
-  <div style="width:80px;height:4px;background:#6c63ff;margin-top:30px;opacity:0;transform:scaleX(0);transform-origin:left;" class="anim-bar" data-delay="0.5"></div>
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 180px;background:linear-gradient(160deg,#050505 0%,#0f0f1a 50%,#050505 100%);overflow:hidden;">
+  <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 20% 50%,${ACCENT}15 0%,transparent 60%);"></div>
+  <div style="font-size:20px;letter-spacing:8px;color:${ACCENT};opacity:0;transform:translateX(-40px);" class="kw" data-delay="0">${esc(scene.kicker ?? "PART")}</div>
+  <div style="font-size:160px;font-weight:900;margin-top:12px;line-height:0.95;letter-spacing:-4px;">${titleSpans}</div>
+  <div style="width:0px;height:3px;background:${ACCENT};margin-top:40px;" class="kw-bar" data-delay="0.9" data-width="120"></div>
+  <div style="font-size:24px;margin-top:30px;opacity:0;color:rgba(255,255,255,0.5);" class="kw" data-delay="1.1">${esc(scene.title ?? "")}</div>
 </div>`;
   }
+
   if (t === "statement") {
-    const lines = String(scene.text ?? "").split("\n").map((l, i) =>
-      `<div style="opacity:0;transform:translateY(24px);" class="anim" data-delay="${0.1 + i * 0.15}">${esc(l)}</div>`).join("");
-    const accent = scene.accent ? "color:#6c63ff;" : "";
+    const lines = String(scene.text ?? "").split("\n");
+    const accent = scene.accent ? `color:${ACCENT};` : "";
+    const allWords = lines.flatMap((l, li) => splitWords(l).map((w, wi) => ({ word: w, line: li, wi })));
+    let delay = 0.15;
+    const spans = lines.map((l, li) => {
+      const ws = splitWords(l).map((w) => {
+        const d = delay; delay += 0.07;
+        return `<span style="display:inline-block;opacity:0;transform:translateY(30px);" class="kw" data-delay="${d}">${esc(w)}</span>`;
+      }).join(" ");
+      return `<div style="opacity:1;line-height:1.1;">${ws}</div>`;
+    }).join("");
     return `<div class="clip" data-start="${start}" data-duration="${dur}" data-track-index="0"
-  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 240px;background:#0a0a0a;">
-  <div style="font-size:84px;font-weight:700;line-height:1.15;${accent}">${lines}</div>
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 200px;background:#080808;">
+  <div style="font-size:96px;font-weight:800;line-height:1.05;letter-spacing:-2px;${accent}">${spans}</div>
 </div>`;
   }
+
   if (t === "stat") {
+    const val = esc(String(scene.value ?? 0));
+    const suf = esc(scene.suffix ?? "");
     return `<div class="clip" data-start="${start}" data-duration="${dur}" data-track-index="0"
-  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#0a0a0a;">
-  <div style="font-size:220px;font-weight:800;color:#6c63ff;opacity:0;transform:scale(0.8);" class="anim" data-delay="0">${esc(String(scene.value ?? 0))}${esc(scene.suffix ?? "")}</div>
-  <div style="font-size:36px;margin-top:20px;opacity:0.7;max-width:800px;text-align:center;" class="anim" data-delay="0.3">${esc(scene.label ?? "")}</div>
-  ${scene.bar != null ? `<div style="width:400px;height:6px;background:#222;margin-top:30px;border-radius:3px;overflow:hidden;"><div style="width:0%;height:100%;background:#6c63ff;" class="anim-bar2" data-pct="${Math.round((scene.bar ?? 0.5) * 100)}" data-delay="0.5"></div></div>` : ""}
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#080808;overflow:hidden;">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,${ACCENT}10 0%,transparent 70%);"></div>
+  <div style="font-size:280px;font-weight:900;color:${ACCENT};line-height:1;opacity:0;transform:scale(0.5);" class="kw" data-delay="0">${val}${suf}</div>
+  <div style="font-size:40px;margin-top:24px;max-width:900px;text-align:center;opacity:0;transform:translateY(20px);" class="kw" data-delay="0.5">${esc(scene.label ?? "")}</div>
+  ${scene.bar != null ? `<div style="width:500px;height:8px;background:rgba(255,255,255,0.08);margin-top:40px;border-radius:4px;overflow:hidden;"><div style="width:0%;height:100%;background:linear-gradient(90deg,${ACCENT},${ACCENT2});border-radius:4px;" class="anim-bar2" data-pct="${Math.round((scene.bar ?? 0.5) * 100)}" data-delay="0.8"></div></div>` : ""}
 </div>`;
   }
+
   if (t === "list") {
-    const items = (scene.items ?? []).map((it, i) =>
-      `<li style="margin:16px 0;opacity:0;transform:translateX(-30px);" class="anim" data-delay="${0.2 + i * 0.15}">${esc(it)}</li>`).join("");
+    const items = (scene.items ?? []).map((it, i) => {
+      const d = 0.3 + i * 0.18;
+      return `<li style="margin:18px 0;opacity:0;transform:translateX(-50px);" class="kw" data-delay="${d}">${esc(it)}</li>`;
+    }).join("");
     return `<div class="clip" data-start="${start}" data-duration="${dur}" data-track-index="0"
-  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 240px;background:#0a0a0a;">
-  <div style="font-size:28px;letter-spacing:4px;color:#6c63ff;margin-bottom:30px;opacity:0;" class="anim" data-delay="0">${esc(scene.kicker ?? "")}</div>
-  <ul style="list-style:none;padding:0;font-size:48px;font-weight:500;">${items}</ul>
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 260px;background:#080808;">
+  <div style="font-size:24px;letter-spacing:6px;color:${ACCENT};margin-bottom:36px;opacity:0;transform:translateY(-20px);" class="kw" data-delay="0">${esc(scene.kicker ?? "")}</div>
+  <ul style="list-style:none;padding:0;font-size:52px;font-weight:500;line-height:1.3;">${items}</ul>
 </div>`;
   }
+
   if (t === "quote") {
+    const qWords = splitWords(scene.quote ?? "").map((w, i) => {
+      const d = 0.2 + i * 0.06;
+      return `<span style="display:inline-block;opacity:0;transform:translateY(20px);" class="kw" data-delay="${d}">${esc(w)}</span>`;
+    }).join(" ");
     return `<div class="clip" data-start="${start}" data-duration="${dur}" data-track-index="0"
-  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 280px;text-align:center;background:#0a0a0a;">
-  <div style="font-size:44px;font-style:italic;line-height:1.4;opacity:0;" class="anim" data-delay="0">"${esc(scene.quote ?? "")}"</div>
-  <div style="font-size:28px;margin-top:40px;opacity:0;color:#6c63ff;" class="anim" data-delay="0.4">— ${esc(scene.attribution ?? "")}</div>
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 260px;text-align:center;background:linear-gradient(180deg,#080808 0%,#111118 100%);">
+  <div style="font-size:52px;font-style:italic;line-height:1.35;max-width:1400px;">${qWords}</div>
+  <div style="font-size:28px;margin-top:50px;color:${ACCENT};opacity:0;transform:translateY(20px);" class="kw" data-delay="1.2">— ${esc(scene.attribution ?? "")}</div>
 </div>`;
   }
+
   if (t === "outro") {
     return `<div class="clip" data-start="${start}" data-duration="${dur}" data-track-index="0"
-  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 100%);">
-  <div style="font-size:72px;font-weight:700;opacity:0;transform:translateY(20px);" class="anim" data-delay="0">${esc(scene.text ?? "")}</div>
-  <div style="font-size:32px;margin-top:20px;opacity:0;color:#6c63ff;" class="anim" data-delay="0.3">${esc(scene.sub ?? "")}</div>
+  style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:linear-gradient(160deg,#050505 0%,#0f0f1a 100%);overflow:hidden;">
+  <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,${ACCENT}12 0%,transparent 60%);"></div>
+  <div style="font-size:80px;font-weight:800;opacity:0;transform:translateY(30px);" class="kw" data-delay="0">${esc(scene.text ?? "")}</div>
+  <div style="font-size:32px;margin-top:24px;opacity:0;color:rgba(255,255,255,0.5);" class="kw" data-delay="0.4">${esc(scene.sub ?? "")}</div>
+  <div style="width:0px;height:3px;background:${ACCENT};margin-top:40px;" class="kw-bar" data-delay="0.7" data-width="200"></div>
 </div>`;
   }
+
   return `<div class="clip" data-start="${start}" data-duration="${dur}" data-track-index="0" style="position:absolute;inset:0;display:flex;justify-content:center;align-items:center;font-size:48px;">${esc(scene.text ?? "")}</div>`;
 }
 
@@ -80,8 +124,9 @@ function buildComposition(chapter) {
 <title>${esc(chapter.title ?? "Chapter")}</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0a0a; color: #f5f5f5; font-family: 'Helvetica Neue', 'Segoe UI', Arial, sans-serif; overflow: hidden; }
+  body { background: #050505; color: #f5f5f5; font-family: 'Helvetica Neue', 'Segoe UI', Arial, sans-serif; overflow: hidden; -webkit-font-smoothing: antialiased; }
   .clip { position: absolute; inset: 0; }
+  .kw { will-change: transform, opacity, filter; }
 </style>
 </head>
 <body>
@@ -92,21 +137,20 @@ ${scenes.join("\n")}
 <script>
   window.__timelines = window.__timelines || {};
   const tl = gsap.timeline({ paused: true });
-  document.querySelectorAll('.anim').forEach((el) => {
+  document.querySelectorAll('.kw').forEach((el) => {
     const d = parseFloat(el.dataset.delay || 0);
-    gsap.set(el, { opacity: 0, y: 24 });
-    tl.to(el, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, d);
-  });
-  document.querySelectorAll('.anim-bar').forEach((el) => {
-    const d = parseFloat(el.dataset.delay || 0);
-    gsap.set(el, { scaleX: 0 });
-    tl.to(el, { scaleX: 1, duration: 0.8, ease: "power2.out" }, d);
-  });
-  document.querySelectorAll('.anim-bar2').forEach((el) => {
-    const d = parseFloat(el.dataset.delay || 0);
-    const pct = el.dataset.pct || 0;
-    gsap.set(el, { width: "0%" });
-    tl.to(el, { width: pct + "%", duration: 1, ease: "power2.out" }, d);
+    const from = { opacity: 0, y: 30, filter: "blur(4px)" };
+    if (el.classList.contains('anim-bar') || el.classList.contains('kw-bar')) {
+      gsap.set(el, { scaleX: 0, transformOrigin: "left center" });
+      tl.to(el, { scaleX: 1, duration: 0.8, ease: "power3.out" }, d);
+    } else if (el.classList.contains('anim-bar2')) {
+      const pct = el.dataset.pct || 0;
+      gsap.set(el, { width: "0%" });
+      tl.to(el, { width: pct + "%", duration: 1.2, ease: "power2.out" }, d);
+    } else {
+      gsap.set(el, from);
+      tl.to(el, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power3.out" }, d);
+    }
   });
   window.__timelines["${chapter.id}"] = tl;
 </script>
@@ -127,7 +171,7 @@ const mounts = sb.chapters.map((ch) => `<div data-composition-src="compositions/
 const indexHtml = `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><title>${esc(sb.meta?.title ?? "Film")}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#0a0a0a;}</style>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#050505;}</style>
 </head>
 <body>
 ${mounts}

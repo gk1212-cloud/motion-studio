@@ -14,7 +14,7 @@ log(`\n  topic: ${topic}\n`);
 
 // 1. Angles
 const angleRes = await askJson({
-  system: `State the obvious take on this topic, then propose 6 alternative angles. Pick the least obvious defensible one. Return JSON: { "obvious_take": "...", "candidates": [ { "angle": "...", "claim": "...", "why": "...", "plausibility": 8, "obviousness": 2 } ] }`,
+  system: `State the obvious take on this topic, then propose 6 alternative angles that NOBODY has said before. Each must have a specific, concrete mechanism (not vague claims). Reject any angle that sounds like a listicle, a self-help tip, or "the truth is". Pick the least obvious defensible one. Return JSON: { "obvious_take": "...", "candidates": [ { "angle": "...", "claim": "...", "why": "...", "plausibility": 8, "obviousness": 2 } ] }`,
   user: `Topic: ${topic}\nAlready used: ${memory.map(v => v.title).join(", ") || "none"}`,
   temperature: 1,
   maxTokens: 2000,
