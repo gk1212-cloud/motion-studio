@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Rising Baseline</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #f5f5f5; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
+  .clip { position: absolute; }
+</style>
+</head>
+<body>
+<div data-composition-id="ch-01" data-width="1920" data-height="1080" data-start="0" data-duration="36" data-fps="30" style="position:relative;width:1920px;height:1080px;overflow:hidden;">
+<div class="clip" data-start="0" data-duration="5" data-track-index="0" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+  <div style="font-size:28px;letter-spacing:4px;opacity:0.6;">PART ONE</div>
+  <div style="font-size:120px;font-weight:700;margin-top:20px;">The Constant Hum</div>
+</div>
+<div class="clip" data-start="5" data-duration="8" data-track-index="0" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:72px;font-weight:600;text-align:center;">
+  <div>The Cognitive</div><div>Noise Floor</div>
+</div>
+<div class="clip" data-start="13" data-duration="7" data-track-index="0" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+  <div style="font-size:200px;font-weight:700;">0</div>
+  <div style="font-size:32px;margin-top:20px;opacity:0.7;"></div>
+</div>
+<div class="clip" data-start="20" data-duration="10" data-track-index="0" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 200px;font-size:48px;">
+  <div style="font-size:28px;letter-spacing:3px;opacity:0.6;margin-bottom:20px;"></div>
+  <ul style="list-style:none;padding:0;"></ul>
+</div>
+<div class="clip" data-start="30" data-duration="6" data-track-index="0" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:72px;font-weight:600;text-align:center;">
+  <div>Silence is now</div><div>an active effort.</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script>
+  window.__timelines = window.__timelines || {};
+  window.__timelines["ch-01"] = gsap.timeline({ paused: true });
+</script>
+</body>
+</html>

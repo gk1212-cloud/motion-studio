@@ -1,0 +1,17 @@
+{
+  "$comment": "Tried top to bottom. GitHub Models was retired 2026-07-30. Gemini 3.1 Flash Lite is the working free model.",
+  "chain": [
+    {
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "apiKeyEnv": "GEMINI_API_KEY"
+    },
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "baseUrl": "https://api.groq.com/openai/v1",
+      "apiKeyEnv": "GROQ_API_KEY"
+    }
+  ]
+}
